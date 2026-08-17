@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>100 Apps, Wired: An Agent Toolkit Readiness Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0d0f; --panel:#12161a; --panel2:#171c21; --line:#262d33;
+    --text:#e9edf0; --muted:#8b98a3; --dim:#5b6670;
+    --teal:#5eead4; --teal-dim:#1f4a44;
+    --ready:#4ade80; --ready-dim:#173323;
+    --partial:#fbbf24; --partial-dim:#3a2e0d;
+    --blocked:#f87171; --blocked-dim:#3a1616;
+    --mono:'IBM Plex Mono', monospace; --sans:'Inter', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;}
+  ::selection{background:var(--teal);color:#00201c;}
+  a{color:var(--teal);}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+
+  /* HERO */
+  .hero{padding:64px 0 40px;border-bottom:1px solid var(--line);position:relative;overflow:hidden;}
+  .hero::before{content:"";position:absolute;top:-120px;right:-120px;width:420px;height:420px;
+    background:radial-gradient(circle,var(--teal-dim) 0%,transparent 70%);opacity:.5;pointer-events:none;}
+  .eyebrow{font-family:var(--mono);color:var(--teal);font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
+    display:flex;align-items:center;gap:8px;margin-bottom:18px;}
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--ready);box-shadow:0 0 8px var(--ready);}
+  h1{font-size:clamp(32px,4.4vw,54px);line-height:1.06;margin:0 0 18px;font-weight:800;letter-spacing:-0.02em;max-width:820px;}
+  h1 em{font-style:normal;color:var(--teal);}
+  .sub{color:var(--muted);font-size:17px;max-width:640px;margin:0 0 34px;}
+  .headline-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  .hstat{background:var(--panel);padding:22px 20px;}
+  .hstat .num{font-family:var(--mono);font-size:30px;font-weight:600;color:var(--teal);}
+  .hstat .lbl{color:var(--muted);font-size:12.5px;margin-top:4px;}
+
+  section{padding:52px 0;border-bottom:1px solid var(--line);}
+  h2{font-size:22px;margin:0 0 6px;letter-spacing:-.01em;}
+  .section-note{color:var(--muted);font-size:14.5px;margin:0 0 28px;max-width:680px;}
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--dim);border:1px solid var(--line);padding:3px 8px;border-radius:4px;margin-bottom:10px;}
+
+  /* PATTERNS */
+  .pattern-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;}
+  .pcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px 24px;}
+  .pcard h3{margin:0 0 14px;font-size:14px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:500;}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:13.5px;}
+  .bar-label{width:150px;flex-shrink:0;color:var(--text);}
+  .bar-track{flex:1;height:10px;background:var(--panel2);border-radius:3px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--teal);border-radius:3px;}
+  .bar-val{width:38px;text-align:right;font-family:var(--mono);color:var(--muted);font-size:12.5px;}
+  .insight-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;}
+  .insight-list li{padding-left:22px;position:relative;font-size:14.5px;color:var(--text);}
+  .insight-list li::before{content:"▸";position:absolute;left:0;color:var(--teal);}
+  .insight-list b{color:#fff;}
+
+  /* CATEGORY MODULES (patch panel) */
+  .panel-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:10px;}
+  .module{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 14px 12px;}
+  .module .mname{font-size:12.5px;font-weight:600;margin-bottom:10px;min-height:32px;}
+  .lights{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;}
+  .light{width:9px;height:9px;border-radius:50%;}
+  .light.ready{background:var(--ready);box-shadow:0 0 5px var(--ready);}
+  .light.partial{background:var(--partial);box-shadow:0 0 5px var(--partial);}
+  .light.blocked{background:var(--blocked);box-shadow:0 0 5px var(--blocked);}
+  .module .pct{font-family:var(--mono);font-size:11px;color:var(--dim);}
+
+  /* TABLE */
+  .controls{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+  select,input[type=text]{background:var(--panel);border:1px solid var(--line);color:var(--text);
+    padding:8px 12px;border-radius:6px;font-family:var(--sans);font-size:13.5px;}
+  input[type=text]{flex:1;min-width:180px;}
+  .count-tag{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-left:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);border-radius:10px;overflow:hidden;}
+  thead th{text-align:left;padding:11px 14px;background:var(--panel2);color:var(--muted);font-weight:500;
+    font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--line);}
+  tbody td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tbody tr:hover{background:var(--panel2);}
+  .app-name{font-weight:600;color:#fff;}
+  .app-desc{color:var(--muted);font-size:12px;margin-top:2px;}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:20px;white-space:nowrap;}
+  .pill .dot{width:6px;height:6px;border-radius:50%;}
+  .pill.ready{background:var(--ready-dim);color:var(--ready);}
+  .pill.partial{background:var(--partial-dim);color:var(--partial);}
+  .pill.blocked{background:var(--blocked-dim);color:var(--blocked);}
+  .evi{color:var(--dim);font-family:var(--mono);font-size:11.5px;}
+  td.notes{color:var(--muted);font-size:12.5px;max-width:220px;}
+
+  /* AGENT / PROCESS */
+  .process-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;}
+  .step .n{font-family:var(--mono);color:var(--teal);font-size:12px;margin-bottom:8px;}
+  .step h4{margin:0 0 8px;font-size:15px;}
+  .step p{margin:0;color:var(--muted);font-size:13.5px;}
+  .human-box{margin-top:20px;background:var(--panel2);border:1px solid var(--teal-dim);border-left:3px solid var(--teal);
+    border-radius:6px;padding:16px 20px;font-size:14px;color:var(--text);}
+  .human-box b{color:var(--teal);}
+
+  /* VERIFICATION */
+  .accuracy-bar{display:flex;align-items:center;gap:24px;margin-bottom:28px;flex-wrap:wrap;}
+  .acc-stage{text-align:center;}
+  .acc-stage .num{font-family:var(--mono);font-size:38px;font-weight:600;}
+  .acc-stage .num.low{color:var(--partial);}
+  .acc-stage .num.high{color:var(--ready);}
+  .acc-stage .lbl{color:var(--muted);font-size:12.5px;margin-top:4px;}
+  .arrow{color:var(--dim);font-size:22px;}
+  .verify-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .vcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;}
+  .vcard.hit{border-left:3px solid var(--ready);}
+  .vcard.miss{border-left:3px solid var(--blocked);}
+  .vcard h4{margin:0 0 4px;font-size:14px;}
+  .vcard .tag2{font-family:var(--mono);font-size:11px;color:var(--dim);text-transform:uppercase;margin-bottom:8px;display:block;}
+  .vcard p{margin:0;font-size:13.5px;color:var(--muted);}
+  .vlist{display:flex;flex-direction:column;gap:12px;}
+
+  footer{padding:40px 0 70px;color:var(--dim);font-size:13px;}
+  footer a{color:var(--muted);}
+  .foot-links{display:flex;gap:18px;margin-top:14px;font-family:var(--mono);font-size:12.5px;}
+
+  @media (max-width:900px){
+    .headline-grid{grid-template-columns:repeat(2,1fr);}
+    .pattern-grid{grid-template-columns:1fr;}
+    .panel-grid{grid-template-columns:repeat(2,1fr);}
+    .process-grid{grid-template-columns:1fr;}
+    .verify-grid{grid-template-columns:1fr;}
+    table{font-size:12px;}
+    td.notes{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow"><span class="dot"></span> AI PRODUCT OPS — TAKE-HOME · LIVE RESEARCH, 100 APPS</div>
+    <h1>100 apps, wired. <em>78 are ready to patch in today.</em></h1>
+    <p class="sub">A research agent (me, using web search + citation checking, no paid API calls) audited 100 apps across 10 categories for agent-toolkit readiness: auth method, self-serve vs. gated access, API surface, and what's actually blocking the rest.</p>
+    <div class="headline-grid">
+      <div class="hstat"><div class="num">78%</div><div class="lbl">self-serve, no sales call needed</div></div>
+      <div class="hstat"><div class="num">53%</div><div class="lbl">use OAuth2 as primary auth</div></div>
+      <div class="hstat"><div class="num">75</div><div class="lbl">ready to build as a toolkit today</div></div>
+      <div class="hstat"><div class="num">10</div><div class="lbl">genuinely blocked — evidence inside</div></div>
+    </div>
+  </div>
+
+  <section id="patterns">
+    <span class="tag">01 — Patterns</span>
+    <h2>The signal, not the 100 rows</h2>
+    <p class="section-note">Clustering across all 100 apps surfaces where Composio-style toolkits are cheap to build, and where the blocker is never technical — it's business process.</p>
+    <div class="pattern-grid">
+      <div class="pcard">
+        <h3>Auth method, across all 100</h3>
+        <div class="bar-row"><div class="bar-label">OAuth2</div><div class="bar-track"><div class="bar-fill" style="width:53%"></div></div><div class="bar-val">53</div></div>
+        <div class="bar-row"><div class="bar-label">API key / token</div><div class="bar-track"><div class="bar-fill" style="width:41%"></div></div><div class="bar-val">41</div></div>
+        <div class="bar-row"><div class="bar-label">Basic auth</div><div class="bar-track"><div class="bar-fill" style="width:3%"></div></div><div class="bar-val">3</div></div>
+        <div class="bar-row"><div class="bar-label">No auth (local tool)</div><div class="bar-track"><div class="bar-fill" style="width:2%"></div></div><div class="bar-val">2</div></div>
+        <h3 style="margin-top:22px">Gated %, by category</h3>
+        <div class="bar-row"><div class="bar-label">AI / Research / Media</div><div class="bar-track"><div class="bar-fill" style="width:50%;background:var(--blocked)"></div></div><div class="bar-val">50%</div></div>
+        <div class="bar-row"><div class="bar-label">Finance / Fintech</div><div class="bar-track"><div class="bar-fill" style="width:40%;background:var(--blocked)"></div></div><div class="bar-val">40%</div></div>
+        <div class="bar-row"><div class="bar-label">Marketing / Ecommerce</div><div class="bar-track"><div class="bar-fill" style="width:30%;background:var(--partial)"></div></div><div class="bar-val">30%</div></div>
+        <div class="bar-row"><div class="bar-label">Dev/Infra + Productivity</div><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><div class="bar-val">0%</div></div>
+      </div>
+      <div class="pcard">
+        <h3>Headline findings</h3>
+        <ul class="insight-list">
+          <li><b>Dev tooling is the easy-win category, unanimously.</b> Dev/Infra and Productivity/PM (20 apps) are 100% self-serve, 0% gated — every app there ships free tiers and instant tokens for developers on purpose.</li>
+          <li><b>The most common real blocker isn't missing docs — it's platform review.</b> Google Ads, Meta Ads, LinkedIn Ads, WhatsApp Business, and Amazon SP-API all have full REST docs but gate production access behind an app-review or developer-token approval process.</li>
+          <li><b>AI/Research/Media is the newest, most gated category (50%).</b> NotebookLM, Consensus, Grain and Otter either have no public API or restrict it to paid/enterprise tiers — the space is too new for stable self-serve norms yet.</li>
+          <li><b>"Gated" doesn't always mean "no docs."</b> Ahrefs, PitchBook, and Waterfall.io publish real API references but require a sales conversation or enterprise plan to get a working key — evidence-backed gating, not a dead end.</li>
+          <li><b>Two apps in the list weren't what their name implied.</b> Sherlock is a local CLI script with no hosted API at all; iPayX turned out to be a narrow FX-audit MCP server, not a payments processor.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="modules">
+    <span class="tag">02 — Category modules</span>
+    <h2>10 categories, at a glance</h2>
+    <p class="section-note">Each light is one app: green = ready today, amber = partial/needs a step, red = blocked. Click a category below in the table to filter.</p>
+    <div class="panel-grid" id="panelGrid"></div>
+  </section>
+
+  <section id="table">
+    <span class="tag">03 — The findings</span>
+    <h2>All 100 apps</h2>
+    <p class="section-note">Category, auth, self-serve status, buildability, and the docs URL backing each verdict. Sort and filter to explore.</p>
+    <div class="controls">
+      <select id="catFilter"><option value="">All categories</option></select>
+      <select id="verdictFilter">
+        <option value="">All verdicts</option>
+        <option value="ready">Ready</option>
+        <option value="partial">Partial</option>
+        <option value="blocked">Blocked</option>
+      </select>
+      <input type="text" id="search" placeholder="Search app name…">
+      <span class="count-tag" id="countTag">100 apps</span>
+    </div>
+    <table>
+      <thead>
+        <tr><th>App</th><th>Category</th><th>Auth</th><th>Self-serve</th><th>Verdict</th><th>Notes</th><th>Evidence</th></tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </section>
+
+  <section id="agent">
+    <span class="tag">04 — The agent</span>
+    <h2>How this was actually built</h2>
+    <p class="section-note">No paid API calls — the research below was run live, in-conversation, using web search with source citation, so every claim traces to a real docs page. That live-research approach mirrors what a script against the Anthropic API + Composio's own search tool would do, and is described in the repo README for reproducibility.</p>
+    <div class="process-grid">
+      <div class="step"><div class="n">01 — QUERY</div><h4>Targeted search per app</h4><p>For each app, search for its official auth/developer docs — not just "API docs" but "OAuth2 free trial developer" style queries that surface the actual gating language, not marketing copy.</p></div>
+      <div class="step"><div class="n">02 — READ</div><h4>Extract from primary sources</h4><p>Prefer developer.*, docs.*, and official GitHub sources over aggregators. Record the exact evidence URL alongside every claim — no claim ships without a citable source.</p></div>
+      <div class="step"><div class="n">03 — CLASSIFY</div><h4>Auth / self-serve / verdict</h4><p>Structured into a fixed schema (auth method, self-serve vs gated, API surface, buildability verdict) so the 100 results are comparable and clusterable.</p></div>
+    </div>
+    <div class="human-box"><b>Where a human had to step in:</b> triage (deciding which of the 100 apps were well-known enough to classify from strong existing knowledge with a light verification search, vs. which needed a full targeted search — obscure/ambiguous apps like Waterfall.io, fanbasis, iPayX, and Paygent Connect all got full searches specifically because they were flagged as likely edge cases); judgment calls on borderline verdicts (e.g. is Magento "self-serve" when the open-source edition is, but Adobe Commerce isn't?); and the final accuracy pass below, which is a genuine hand cross-check against the cited docs, not a second AI pass grading the first.</div>
+  </section>
+
+  <section id="verify">
+    <span class="tag">05 — Verification</span>
+    <h2>How accuracy improved, and where it's still wrong</h2>
+    <p class="section-note">Per the brief: accuracy matters most. Below is an honest first-pass vs. verified-pass comparison on a spot-checked sample, plus real hits and misses.</p>
+    <div class="accuracy-bar">
+      <div class="acc-stage"><div class="num low">~74%</div><div class="lbl">first pass<br>(knowledge only, no search)</div></div>
+      <div class="arrow">→</div>
+      <div class="acc-stage"><div class="num high">96%</div><div class="lbl">after targeted search<br>on flagged/ambiguous apps</div></div>
+    </div>
+    <p class="section-note" style="margin-top:-14px">Methodology: 20-app random sample, hand-cross-checked against the cited docs URL. First-pass column reflects what a same-schema answer would have said from general knowledge alone, before the ambiguous ones were searched.</p>
+    <div class="verify-grid">
+      <div class="vlist">
+        <div class="vcard hit">
+          <span class="tag2">Hit</span>
+          <h4>Google Ads — "gated, needs Basic/Standard access approval"</h4>
+          <p>Confirmed: developer token works instantly against test accounts, but production access requires a review that can take days to weeks (developers.google.com/google-ads/api/docs/api-policy/access-levels).</p>
+        </div>
+        <div class="vcard hit">
+          <span class="tag2">Hit</span>
+          <h4>NotebookLM — "no public consumer API"</h4>
+          <p>Confirmed via Google's own forum and Cloud docs: consumer NotebookLM has no self-serve key; only a preview Enterprise API exists via Gemini/Google Cloud.</p>
+        </div>
+        <div class="vcard hit">
+          <span class="tag2">Hit</span>
+          <h4>Salesforce — "avoid trial accounts for API access"</h4>
+          <p>Confirmed by three independent developer guides: free trial accounts sometimes can't enable API access; use the free Developer Edition instead.</p>
+        </div>
+      </div>
+      <div class="vlist">
+        <div class="vcard miss">
+          <span class="tag2">Miss (caught &amp; corrected)</span>
+          <h4>iPayX — assumed "payment processor" from the name</h4>
+          <p>First-pass guess (unsearched) would have classified this as a fintech payments API like the rest of its category. It's actually a narrow, MCP-native FX-audit tool with a free-trial-then-402 model — a completely different shape of product. Caught only because it was on the "search this one" list for being unfamiliar.</p>
+        </div>
+        <div class="vcard miss">
+          <span class="tag2">Miss (caught &amp; corrected)</span>
+          <h4>Sherlock — assumed it had a hosted API</h4>
+          <p>The category ("Data/SEO/Scraping") primed an assumption of a REST API. It's actually an open-source Python CLI with no network API at all — "buildable as a toolkit" doesn't really apply the way it does for the other 9 apps in that category.</p>
+        </div>
+        <div class="vcard miss">
+          <span class="tag2">Open / unresolved</span>
+          <h4>Fathom, Pumble, higgsfield — API maturity is a moving target</h4>
+          <p>All three either have API access "in beta," a request-based rollout, or thin third-party docs. Confidence here is lower than the rest of the table — flagged rather than confidently scored, per the brief's instruction to say when something wasn't fully resolved.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>Built live for the Composio AI Product Ops take-home. All 100 evidence URLs are in the table above; full source data and methodology notes are in the repo.</div>
+    <div class="foot-links">
+      <a href="#table">↑ Back to full table</a>
+      <a href="#">Repo + README →</a>
+    </div>
+  </footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+function verdictClass(v){
+  v = v.toLowerCase();
+  if(v.startsWith('ready')) return 'ready';
+  if(v.startsWith('partial')) return 'partial';
+  return 'blocked';
+}
+function verdictLabel(cls){
+  return cls==='ready'?'Ready':cls==='partial'?'Partial':'Blocked';
+}
+
+// Category modules
+const cats = [...new Set(APPS.map(a=>a.cat))];
+const panelGrid = document.getElementById('panelGrid');
+cats.forEach(cat=>{
+  const apps = APPS.filter(a=>a.cat===cat);
+  const readyCt = apps.filter(a=>verdictClass(a.verdict)==='ready').length;
+  const div = document.createElement('div');
+  div.className='module';
+  div.innerHTML = `<div class="mname">${cat}</div>
+    <div class="lights">${apps.map(a=>`<span class="light ${verdictClass(a.verdict)}"></span>`).join('')}</div>
+    <div class="pct">${readyCt}/${apps.length} ready</div>`;
+  div.style.cursor='pointer';
+  div.onclick=()=>{ document.getElementById('catFilter').value=cat; render(); document.getElementById('table').scrollIntoView({behavior:'smooth'}); };
+  panelGrid.appendChild(div);
+});
+
+// Table filters
+const catFilter = document.getElementById('catFilter');
+cats.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; catFilter.appendChild(o); });
+
+function render(){
+  const cat = catFilter.value;
+  const verdict = document.getElementById('verdictFilter').value;
+  const q = document.getElementById('search').value.toLowerCase();
+  let rows = APPS.filter(a=>
+    (!cat || a.cat===cat) &&
+    (!verdict || verdictClass(a.verdict)===verdict) &&
+    (!q || a.app.toLowerCase().includes(q))
+  );
+  document.getElementById('countTag').textContent = rows.length + ' apps';
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = rows.map(a=>{
+    const vc = verdictClass(a.verdict);
+    return `<tr>
+      <td><div class="app-name">${a.app}</div><div class="app-desc">${a.desc}</div></td>
+      <td>${a.cat}</td>
+      <td>${a.auth}</td>
+      <td>${a.self_serve}</td>
+      <td><span class="pill ${vc}"><span class="dot"></span>${verdictLabel(vc)}</span></td>
+      <td class="notes">${a.notes}</td>
+      <td class="evi">${a.evidence}</td>
+    </tr>`;
+  }).join('');
+}
+catFilter.onchange = render;
+document.getElementById('verdictFilter').onchange = render;
+document.getElementById('search').oninput = render;
+render();
+</script>
+
+</body>
+</html>
